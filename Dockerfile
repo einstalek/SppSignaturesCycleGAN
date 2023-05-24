@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM --platform=linux/amd64 ubuntu:focal
 # Use an official Python runtime as the base image
 FROM python:3.9-slim-buster
 
@@ -17,9 +17,13 @@ RUN pip install -r pytorch-CycleGAN-and-pix2pix/requirements.txt
 # Update networks.py containing SPP Discriminator
 COPY networks.py pytorch-CycleGAN-and-pix2pix/models/
 
-# Create train/test dataset split, mount path to signatures at /data
-COPY train_test_split.py /app
-CMD ["python", "/app/train_test_split.py", "/data"]
+# Copy the dataset from the host machine into the container
+# Must contain two folders: forg and org
+COPY ./signatures/* /app/data
+
+# Create train/test dataset split in /app/split/
+COPY train_test_split.py /app/
+CMD ["python", "/app/train_test_split.py"]
 
 COPY auth_wandb.py /app
 CMD ["python", "auth_wandb.py"]
